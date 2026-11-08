@@ -17,15 +17,13 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install OpenOrbis Toolchain & Dependencies
+      - name: Install Dependencies & OpenOrbis Toolchain
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential python3-pip clang lld
           git clone https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain.git openorbis
 
       - name: Build Package
-        env:
-          OO_PS4_TOOLCHAIN: ${{ github.workspace }}/openorbis
         run: |
           chmod +x build.sh
           ./build.sh
