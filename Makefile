@@ -1,6 +1,6 @@
 CC = clang
 CFLAGS = -O3 -Wall -Wextra -isystem $(OO_PS4_TOOLCHAIN)/include -Isrc
-LDFLAGS = -L$(OO_PS4_TOOLCHAIN)/lib -lm -lpthread -lSceAudioOut -lSceUserService
+LDFLAGS = -L$(OO_PS4_TOOLCHAIN)/lib -lm -lpthread
 
 all: WISH30300.pkg
 
