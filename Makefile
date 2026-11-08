@@ -1,22 +1,22 @@
 CC = clang
-CFLAGS = -O3 -Wall -Wextra -isystem $(OO_PS4_TOOLCHAIN)/include -Isrc
+CFLAGS = -O3 -Wall -Wextra -I$(OO_PS4_TOOLCHAIN)/include -I$(OO_PS4_TOOLCHAIN)/include/SDL2 -Isrc
 LDFLAGS = -L$(OO_PS4_TOOLCHAIN)/lib -lSDL2 -lm -lpthread
 
 all: WISH30300.pkg
 
-assets_gen: tools/generate_assets.py
+assets_gen:
 	python3 tools/generate_assets.py
 
 eboot.bin: src/main.c assets_gen
 	$(CC) $(CFLAGS) src/main.c -o eboot.bin $(LDFLAGS)
 
-PARAM.SFO: tools/gen_sfo.py
+PARAM.SFO:
 	python3 tools/gen_sfo.py
 
-project.gp4: tools/make_gp4.py eboot.bin PARAM.SFO
+project.gp4: eboot.bin PARAM.SFO
 	python3 tools/make_gp4.py
 
-WISH30300.pkg: project.gp4 eboot.bin PARAM.SFO tools/pkg_builder.py
+WISH30300.pkg: project.gp4
 	python3 tools/pkg_builder.py
 
 clean:
