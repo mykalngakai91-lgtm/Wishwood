@@ -8,13 +8,11 @@
 int main(int argc, char* argv[]) {
     (void)argc; (void)argv;
 
-    // Initialize SDL video and game controller subsystems
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
         printf("[Error] SDL_Init failed: %s\n", SDL_GetError());
         return -1;
     }
 
-    // Create 1080p Window for PS4 output
     SDL_Window* window = SDL_CreateWindow("Wishwood: Kingdom 3030",
                                           SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                           SCREEN_WIDTH, SCREEN_HEIGHT, 
@@ -25,7 +23,6 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    // Create hardware-accelerated renderer
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!renderer) {
         printf("[Error] Renderer creation failed: %s\n", SDL_GetError());
@@ -34,16 +31,21 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    // Open first available controller (DualShock 4 / DualSense)
+    // Load generated BMP assets
+    SDL_Surface* bg_surface = SDL_LoadBMP("assets/bg.bmp");
+    SDL_Texture* bg_texture = bg_surface ? SDL_CreateTextureFromSurface(renderer, bg_surface) : NULL;
+    if (bg_surface) SDL_FreeSurface(bg_surface);
+
+    SDL_Surface* player_surface = SDL_LoadBMP("assets/player.bmp");
+    SDL_Texture* player_texture = player_surface ? SDL_CreateTextureFromSurface(renderer, player_surface) : NULL;
+    if (player_surface) SDL_FreeSurface(player_surface);
+
+    // Open controller if available
     SDL_GameController* controller = NULL;
     if (SDL_NumJoysticks() > 0) {
         controller = SDL_GameControllerOpen(0);
-        if (controller) {
-            printf("[Info] Controller connected: %s\n", SDL_GameControllerName(controller));
-        }
     }
 
-    // Player starting position and movement variables
     float player_x = SCREEN_WIDTH / 2.0f - 32.0f;
     float player_y = SCREEN_HEIGHT / 2.0f - 32.0f;
     float speed = 10.0f;
@@ -51,72 +53,72 @@ int main(int argc, char* argv[]) {
     bool running = true;
     SDL_Event event;
 
-    // Main Game Loop
     while (running) {
-        // Handle input events
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
             }
         }
 
-        // Handle Keyboard / Digital D-Pad input mapping
+        // Input handling
         const Uint8* keystate = SDL_GetKeyboardState(NULL);
         if (keystate[SDL_SCANCODE_LEFT] || keystate[SDL_SCANCODE_A])  player_x -= speed;
         if (keystate[SDL_SCANCODE_RIGHT] || keystate[SDL_SCANCODE_D]) player_x += speed;
         if (keystate[SDL_SCANCODE_UP] || keystate[SDL_SCANCODE_W])     player_y -= speed;
         if (keystate[SDL_SCANCODE_DOWN] || keystate[SDL_SCANCODE_S])   player_y += speed;
 
-        // Handle Controller Joystick / D-Pad input if connected
         if (controller) {
-            // D-Pad buttons
             if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_LEFT))  player_x -= speed;
             if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_RIGHT)) player_x += speed;
             if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_UP))    player_y -= speed;
-            if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_DOWN))  player_y -= speed;
+            if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_DOWN))  player_y += speed;
 
-            // Left Analog Stick axes (-32768 to 32767)
             Sint16 axis_x = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX);
             Sint16 axis_y = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY);
-            
             float deadzone = 8000.0f;
             if (axis_x > deadzone)  player_x += speed * (axis_x / 32767.0f);
             if (axis_x < -deadzone) player_x += speed * (axis_x / 32767.0f);
             if (axis_y > deadzone)  player_y += speed * (axis_y / 32767.0f);
             if (axis_y < -deadzone) player_y += speed * (axis_y / 32767.0f);
 
-            // Exit game if PS button or Special options combo pressed
             if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_BACK)) {
                 running = false;
             }
         }
 
-        // Screen Boundaries check
+        // Boundaries
         if (player_x < 0) player_x = 0;
         if (player_x > SCREEN_WIDTH - 64) player_x = SCREEN_WIDTH - 64;
         if (player_y < 0) player_y = 0;
         if (player_y > SCREEN_HEIGHT - 64) player_y = SCREEN_HEIGHT - 64;
 
-        // Clear screen with background color (Dark Navy)
-        SDL_SetRenderDrawColor(renderer, 20, 24, 35, 255);
+        // Render frame
         SDL_RenderClear(renderer);
 
-        // Draw Player Sprite (Green Square placeholder)
-        SDL_Rect player_rect = { (int)player_x, (int)player_y, 64, 64 };
-        SDL_SetRenderDrawColor(renderer, 0, 230, 138, 255);
-        SDL_RenderFillRect(renderer, &player_rect);
+        // Draw background texture if loaded, otherwise fallback to color
+        if (bg_texture) {
+            SDL_RenderCopy(renderer, bg_texture, NULL, NULL);
+        } else {
+            SDL_SetRenderDrawColor(renderer, 20, 24, 35, 255);
+            SDL_RenderFillRect(renderer, NULL);
+        }
 
-        // Present frame to screen
+        // Draw player texture or fallback rect
+        SDL_Rect player_rect = { (int)player_x, (int)player_y, 64, 64 };
+        if (player_texture) {
+            SDL_RenderCopy(renderer, player_texture, NULL, &player_rect);
+        } else {
+            SDL_SetRenderDrawColor(renderer, 0, 230, 138, 255);
+            SDL_RenderFillRect(renderer, &player_rect);
+        }
+
         SDL_RenderPresent(renderer);
-        
-        // Frame throttle ~60 FPS
         SDL_Delay(16);
     }
 
-    // Cleanup resources
-    if (controller) {
-        SDL_GameControllerClose(controller);
-    }
+    if (bg_texture) SDL_DestroyTexture(bg_texture);
+    if (player_texture) SDL_DestroyTexture(player_texture);
+    if (controller) SDL_GameControllerClose(controller);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
