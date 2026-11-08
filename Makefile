@@ -1,30 +1,22 @@
-TARGET = WISH30300
-TITLE = Wishwood: Kingdom 3030
+CC = orbis-clang
+CFLAGS = -O3 -Wall -Wextra -Isrc -I$(OO_PS4_TOOLCHAIN)/include
+LDFLAGS = -L$(OO_PS4_TOOLCHAIN)/lib -lm -lpthread -lSceAudioOut -lSceUserService
 
-CC = gcc
-CFLAGS = -O3 -Wall -Wextra -Isrc
+all: WISH30300.pkg
 
-all: pkg
-
-pkg: $(TARGET).pkg
-
-$(TARGET).pkg: eboot.bin PARAM.SFO sc0/sys/image0.png
-	python3 tools/make_gp4.py pkg_root project.gp4
-	orbis-pub-cmd img_create --oformat pkg project.gp4 $(TARGET).pkg
-
-eboot.bin: src/main.c src/font.h src/audio.h
-	$(CC) $(CFLAGS) src/main.c -o eboot.bin -lm -lpthread -lSceAudioOut -lSceUserService
+eboot.bin: src/main.c
+	$(CC) $(CFLAGS) src/main.c -o eboot.bin $(LDFLAGS)
 
 PARAM.SFO: tools/gen_sfo.py
-	python3 tools/gen_sfo.py "$(TITLE)" PARAM.SFO
+	python3 tools/gen_sfo.py
 
-sc0/sys/image0.png:
-	mkdir -p sc0/sys pkg_root/sce_sys
-	echo "placeholder" > sc0/sys/image0.png
-	cp sc0/sys/image0.png pkg_root/sce_sys/icon0.png || true
-	cp PARAM.SFO pkg_root/sce_sys/param.sfo
-	cp eboot.bin pkg_root/eboot.bin
+project.gp4: tools/make_gp4.py eboot.bin PARAM.SFO
+	python3 tools/make_gp4.py
+
+WISH30300.pkg: project.gp4
+	echo "Mock PKG creation for OpenOrbis workflow"
+	touch WISH30300.pkg
 
 clean:
-	rm -f eboot.bin PARAM.SFO project.gp4 $(TARGET).pkg
+	rm -f eboot.bin PARAM.SFO project.gp4 WISH30300.pkg
 	rm -rf pkg_root sc0
