@@ -19,3 +19,27 @@ WISH30300.pkg: project.gp4 eboot.bin PARAM.SFO tools/pkg_builder.py
 clean:
 	rm -f eboot.bin PARAM.SFO project.gp4 WISH30300.pkg
 	rm -rf pkg_root sc0
+CC = clang
+CFLAGS = -O3 -Wall -Wextra -isystem $(OO_PS4_TOOLCHAIN)/include -Isrc
+LDFLAGS = -L$(OO_PS4_TOOLCHAIN)/lib -lm -lpthread
+
+all: WISH30300.pkg
+
+assets_gen: tools/generate_assets.py
+	python3 tools/generate_assets.py
+
+eboot.bin: src/main.c
+	$(CC) $(CFLAGS) src/main.c -o eboot.bin $(LDFLAGS)
+
+PARAM.SFO: tools/gen_sfo.py
+	python3 tools/gen_sfo.py
+
+project.gp4: tools/make_gp4.py eboot.bin PARAM.SFO assets_gen
+	python3 tools/make_gp4.py
+
+WISH30300.pkg: project.gp4 eboot.bin PARAM.SFO tools/pkg_builder.py assets_gen
+	python3 tools/pkg_builder.py
+
+clean:
+	rm -f eboot.bin PARAM.SFO project.gp4 WISH30300.pkg
+	rm -rf pkg_root sc0 assets
