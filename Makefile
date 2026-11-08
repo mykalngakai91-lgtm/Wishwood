@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -O3 -Wall -Wextra -I$(OO_PS4_TOOLCHAIN)/include -Isrc
+CFLAGS = -O3 -Wall -Wextra -I$(OO_PS4_TOOLCHAIN)/include/SDL2 -Isrc
 LDFLAGS = -L$(OO_PS4_TOOLCHAIN)/lib -lSDL2 -lm -lpthread
 
 all: WISH30300.pkg
