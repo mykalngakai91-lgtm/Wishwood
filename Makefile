@@ -1,6 +1,6 @@
-CC = orbis-clang
-CFLAGS = -O3 -Wall -Wextra -Isrc
-LDFLAGS = -lm -lpthread -lSceAudioOut -lSceUserService
+CC = clang
+CFLAGS = -O3 -Wall -Wextra -isystem $(OO_PS4_TOOLCHAIN)/include -Isrc
+LDFLAGS = -L$(OO_PS4_TOOLCHAIN)/lib -lm -lpthread -lSceAudioOut -lSceUserService
 
 all: WISH30300.pkg
 
