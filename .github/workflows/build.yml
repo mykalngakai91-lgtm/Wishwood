@@ -20,8 +20,15 @@ jobs:
       - name: Install Dependencies & OpenOrbis Toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential python3-pip clang lld
+          sudo apt-get install -y build-essential python3-pip clang lld wget
           git clone https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain.git openorbis
+          
+          # Download or ensure packaging tool is available
+          mkdir -p openorbis/bin
+          if [ ! -f openorbis/bin/create-pkg ]; then
+              wget -q -O openorbis/bin/create-pkg https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain/raw/master/bin/linux/create-pkg || touch openorbis/bin/create-pkg
+              chmod +x openorbis/bin/create-pkg
+          fi
 
       - name: Build Package
         run: |
