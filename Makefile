@@ -1,6 +1,6 @@
-CC = clang
-CFLAGS = -O3 -Wall -Wextra --target=x86_64-pc-freebsd12-elf -Isrc -I$(OO_PS4_TOOLCHAIN)/include
-LDFLAGS = -L$(OO_PS4_TOOLCHAIN)/lib -lm -lpthread -lSceAudioOut -lSceUserService
+CC = orbis-clang
+CFLAGS = -O3 -Wall -Wextra -Isrc
+LDFLAGS = -lm -lpthread -lSceAudioOut -lSceUserService
 
 all: WISH30300.pkg
 
