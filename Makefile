@@ -1,6 +1,11 @@
 CC = clang
-CFLAGS = -O3 -Wall -Wextra -I$(OO_PS4_TOOLCHAIN)/include/SDL2 -Isrc
-LDFLAGS = -L$(OO_PS4_TOOLCHAIN)/lib -lSDL2 -lm -lpthread
+INCLUDES = -I$(OO_PS4_TOOLCHAIN)/include
+SDLINC = -I$(OO_PS4_TOOLCHAIN)/include/SDL2
+SRCDIR = -Isrc
+CFLAGS = -O3 -Wall -Wextra $(INCLUDES) $(SDLINC) $(SRCDIR)
+LIBDIR = -L$(OO_PS4_TOOLCHAIN)/lib
+LIBS = -lSDL2 -lm -lpthread
+LDFLAGS = $(LIBDIR) $(LIBS)
 
 all: WISH30300.pkg
 
