@@ -1,4 +1,4 @@
-CC = orbis-clang
+CC = clang
 CFLAGS = -O3 -Wall -Wextra -Isrc -I$(OO_PS4_TOOLCHAIN)/include
 LDFLAGS = -L$(OO_PS4_TOOLCHAIN)/lib -lm -lpthread -lSceAudioOut -lSceUserService
 
