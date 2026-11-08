@@ -26,8 +26,9 @@ jobs:
       - name: Build Package
         env:
           OO_PS4_TOOLCHAIN: ${{ github.workspace }}/openorbis
-          C_INCLUDE_PATH: ${{ github.workspace }}/openorbis/include
         run: |
+          # Add OpenOrbis bin to PATH so make/compiler can find oo-clang
+          echo "${{ github.workspace }}/openorbis/bin" >> $GITHUB_PATH
           chmod +x build.sh
           ./build.sh
 
