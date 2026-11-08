@@ -125,3 +125,27 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+CC = clang
+CFLAGS = -O3 -Wall -Wextra -I$(OO_PS4_TOOLCHAIN)/include -Isrc
+LDFLAGS = -L$(OO_PS4_TOOLCHAIN)/lib -lSDL2 -lm -lpthread
+
+all: WISH30300.pkg
+
+assets_gen:
+	python3 tools/generate_assets.py
+
+eboot.bin: src/main.c assets_gen
+	$(CC) $(CFLAGS) src/main.c -o eboot.bin $(LDFLAGS)
+
+PARAM.SFO:
+	python3 tools/gen_sfo.py
+
+project.gp4: eboot.bin PARAM.SFO
+	python3 tools/make_gp4.py
+
+WISH30300.pkg: project.gp4
+	python3 tools/pkg_builder.py
+
+clean:
+	rm -f eboot.bin PARAM.SFO project.gp4 WISH30300.pkg
+	rm -rf pkg_root sc0 assets
